@@ -1,0 +1,12 @@
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+canvas{
+    background-color: darkgray;
+    height: max-content;
+    width: max-content;
+}
+
+
