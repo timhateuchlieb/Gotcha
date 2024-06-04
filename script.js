@@ -10,6 +10,9 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
+
+let gameOver = false;
+
 // Variables for the game ball's x and y coordinates
 let x = canvas.width / 2;
 let y = canvas.height / 2;
@@ -17,6 +20,7 @@ let y = canvas.height / 2;
 // Chaser array to hold multiple chasers
 let chasers = [];
 const chaserSpeed = 2;
+const radius = 10;
 
 // Function to create a new chaser at a random position excluding the center and other chasers
 function createChaser() {
@@ -41,7 +45,7 @@ function createChaser() {
     chasers.push({x: chaserX, y: chaserY});
 }
 
-// Spawn a new chaser every 3 seconds
+// Spawn a new chaser every 1 second
 setInterval(createChaser, 1000);
 
 // Movement flags
@@ -133,6 +137,15 @@ function circlesCollide(circle1, circle2) {
 }
 
 function draw() {
+    if (gameOver) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.font = "48px serif";
+        ctx.fillStyle = "red";
+        ctx.textAlign = "center";
+        ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2);
+        return;
+    }
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (rightPressed && x < canvas.width - 10) {
@@ -163,15 +176,24 @@ function draw() {
     // Update and draw all chasers
     updateChasers();
 
+    //collision detection
+    for (let i = 0; i < chasers.length; i++) {
+        if (circlesCollide({x: x, y: y, radius: radius}, {x: chasers[i].x, y: chasers[i].y, radius: radius})) {
+            gameOver = true;
+            break;
+        }
+    }
+
+
     ctx.beginPath();
-    ctx.arc(x, y, 10, 0, Math.PI * 2);
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
     ctx.fillStyle = "#0095DD";
     ctx.fill();
     ctx.closePath();
 
     chasers.forEach(chaser => {
         ctx.beginPath();
-        ctx.arc(chaser.x, chaser.y, 10, 0, Math.PI * 2);
+        ctx.arc(chaser.x, chaser.y, radius, 0, Math.PI * 2);
         ctx.fillStyle = "#DD9500";
         ctx.fill();
         ctx.closePath();
