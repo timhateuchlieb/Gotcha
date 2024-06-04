@@ -1,6 +1,7 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
+//resize canvas to window size
 function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -37,7 +38,7 @@ function createChaser() {
         Math.abs(chaserY - canvas.height / 2) < minDistanceFromCenter) ||
     chasers.some(isOverlapping));
 
-    chasers.push({ x: chaserX, y: chaserY });
+    chasers.push({x: chaserX, y: chaserY});
 }
 
 // Spawn a new chaser every 3 seconds
@@ -48,6 +49,7 @@ let rightPressed = false;
 let leftPressed = false;
 let upPressed = false;
 let downPressed = false;
+let spacePressed = false;
 
 document.addEventListener('keydown', keyDownHandler, false);
 document.addEventListener('keyup', keyUpHandler, false);
@@ -67,6 +69,10 @@ function keyDownHandler(event) {
         upPressed = true;
         event.preventDefault(); // Prevent default action
     }
+    if (event.key === ' ') {
+        spacePressed = true;
+        event.preventDefault();
+    }
 }
 
 function keyUpHandler(event) {
@@ -83,6 +89,10 @@ function keyUpHandler(event) {
     } else if (event.key === 'ArrowUp') {
         upPressed = false;
         event.preventDefault(); // Prevent default action
+    }
+    if (event.key === ' '){
+        spacePressed = false;
+        event.preventDefault();
     }
 }
 
@@ -136,6 +146,18 @@ function draw() {
     }
     if (upPressed && y > 10) {
         y -= 5;
+    }
+    if (spacePressed && rightPressed && x < canvas.width - 30) {
+        x += 20;
+    }
+    if (spacePressed && leftPressed && x > 30) {
+        x -= 20;
+    }
+    if ( spacePressed && downPressed && y < canvas.height - 30) {
+        y += 20;
+    }
+    if (spacePressed && upPressed && y > 30) {
+        y -= 20;
     }
 
     // Update and draw all chasers
