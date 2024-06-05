@@ -91,6 +91,11 @@ function keyDownHandler(event) {
         spacePressed = true;
         event.preventDefault();
     }
+    if(event.key === 'Enter' && gameOver){
+        resetGame();
+
+        event.preventDefault();
+    }
 }
 
 function keyUpHandler(event) {
@@ -136,7 +141,6 @@ function circlesCollide(circle1, circle2) {
     return distance < (circle1.radius + circle2.radius);
 }
 
-// Add this resetGame function to reset the game state
 function resetGame() {
     gameOver = false;
     chaserCount = 0;
@@ -144,13 +148,6 @@ function resetGame() {
     y = canvasHeight / 2;
     chasers = [];
     draw();
-}
-
-function resetKeyDownHandler(){
-    if(gameOver) {
-        resetGame();
-        gameOver = false;
-    }
 }
 
 function draw() {
@@ -164,8 +161,8 @@ function draw() {
         ctx.fillStyle = "white";
         ctx.fillText(`score: ${chaserCount}`, canvasWidth / 2, canvasHeight / 2 + 60);
         ctx.font = "12px serif";
-        ctx.fillText("press any Key to replay", canvasWidth / 2, canvasHeight / 2 + 120)
-        document.addEventListener('keydown', resetKeyDownHandler, false);
+        ctx.fillText("press Enter to replay", canvasWidth / 2, canvasHeight / 2 + 120)
+        document.addEventListener('keydown', keyDownHandler, false);
         return;
     }
 
@@ -224,7 +221,7 @@ function draw() {
     // Display chaser count during the game
     ctx.font = "10px serif";
     ctx.fillStyle = "white";
-    ctx.fillText(`Chasers Spawned: ${chaserCount}`, 10, 20);
+    ctx.fillText(`Score: ${chaserCount}`, 20, 20);
 
     requestAnimationFrame(draw);
 }
