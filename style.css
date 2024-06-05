@@ -4,7 +4,7 @@ html, body {
 }
 
 canvas{
-    background-color: darkgray;
+    background-color: black;
     height: max-content;
     width: max-content;
 }
