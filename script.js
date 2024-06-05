@@ -37,7 +37,7 @@ const radius = 10;
 
 // Function to create a new chaser at a random position excluding the center and other chasers
 function createChaser() {
-    const minDistanceFromCenter = 100;
+    const minDistanceFromPlayer = 200;
     const chaserRadius = 10;
     let chaserX, chaserY;
 
@@ -48,11 +48,14 @@ function createChaser() {
         return distance < (chaserRadius * 2);
     }
 
+    //spawn chasers not in instant reach of the player
     do {
         chaserX = Math.random() * canvasWidth;
         chaserY = Math.random() * canvasHeight;
-    } while ((Math.abs(chaserX - canvasWidth / 2) < minDistanceFromCenter &&
-        Math.abs(chaserY - canvasHeight / 2) < minDistanceFromCenter) ||
+    } while ((Math.abs(x - chaserX) < minDistanceFromPlayer &&
+        Math.abs(chaserX - x) < minDistanceFromPlayer ||
+        Math.abs(y - chaserY) < minDistanceFromPlayer) &&
+        Math.abs(chaserY - y) < minDistanceFromPlayer ||
     chasers.some(isOverlapping));
 
     chasers.push({ x: chaserX, y: chaserY });
@@ -93,7 +96,6 @@ function keyDownHandler(event) {
     }
     if(event.key === 'Enter' && gameOver){
         resetGame();
-
         event.preventDefault();
     }
 }
