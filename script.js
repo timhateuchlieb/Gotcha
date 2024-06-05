@@ -7,9 +7,11 @@ let devicePixelRatio = window.devicePixelRatio || 1;
 
 // Game variables
 let gameOver = false;
+
 let lives = 3;
 let playerX = canvasWidth / 2;
 let playerY = canvasHeight / 2;
+
 let chaserCount = 0;
 let chasers = [];
 const chaserSpeed = 2;
@@ -110,11 +112,13 @@ function debounce(func, wait) {
 
 function createChaser() {
     const minDistanceFromPlayer = 200;
+
     let chaserX, chaserY;
 
     do {
         chaserX = Math.random() * canvasWidth;
         chaserY = Math.random() * canvasHeight;
+
     } while ((Math.abs(playerX - chaserX) < minDistanceFromPlayer && Math.abs(playerY - chaserY) < minDistanceFromPlayer) || chasers.some(chaser => isOverlapping(chaserX, chaserY, chaser)));
 
     chasers.push({ x: chaserX, y: chaserY });
@@ -219,7 +223,6 @@ function draw() {
         ctx.closePath();
     });
 
-    // Display chaser count during the game
     ctx.font = "10px serif";
     ctx.fillStyle = "white";
     ctx.fillText(`Score: ${chaserCount}`, 20, 20);
