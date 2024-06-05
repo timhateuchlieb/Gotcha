@@ -7,12 +7,20 @@ let devicePixelRatio = window.devicePixelRatio || 1;
 
 // Game variables
 let gameOver = false;
-let x = canvasWidth / 2;
-let y = canvasHeight / 2;
+
+let lives = 3;
+let playerX = canvasWidth / 2;
+let playerY = canvasHeight / 2;
+
 let chaserCount = 0;
 let chasers = [];
 const chaserSpeed = 2;
 const radius = 10;
+
+// Invincibility variables
+let invincible = false;
+let invincibilityDuration = 3000; // 3 seconds of invincibility
+let invincibilityStartTime = 0;
 
 // Movement flags
 let rightPressed = false;
@@ -104,13 +112,14 @@ function debounce(func, wait) {
 
 function createChaser() {
     const minDistanceFromPlayer = 200;
-    const chaserRadius = 10;
+
     let chaserX, chaserY;
 
     do {
         chaserX = Math.random() * canvasWidth;
         chaserY = Math.random() * canvasHeight;
-    } while ((Math.abs(x - chaserX) < minDistanceFromPlayer && Math.abs(y - chaserY) < minDistanceFromPlayer) || chasers.some(chaser => isOverlapping(chaserX, chaserY, chaser)));
+
+    } while ((Math.abs(playerX - chaserX) < minDistanceFromPlayer && Math.abs(playerY - chaserY) < minDistanceFromPlayer) || chasers.some(chaser => isOverlapping(chaserX, chaserY, chaser)));
 
     chasers.push({ x: chaserX, y: chaserY });
     chaserCount++;
@@ -125,8 +134,8 @@ function isOverlapping(x, y, chaser) {
 
 function updateChasers() {
     chasers.forEach(chaser => {
-        const dx = x - chaser.x;
-        const dy = y - chaser.y;
+        const dx = playerX - chaser.x;
+        const dy = playerY - chaser.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance > 0) {
@@ -145,10 +154,12 @@ function circlesCollide(circle1, circle2) {
 
 function resetGame() {
     gameOver = false;
+    lives = 3;
     chaserCount = 0;
-    x = canvasWidth / 2;
-    y = canvasHeight / 2;
+    playerX = canvasWidth / 2;
+    playerY = canvasHeight / 2;
     chasers = [];
+    invincible = false;
     draw();
 }
 
@@ -167,31 +178,40 @@ function draw() {
         return;
     }
 
-    ctx.clearRect(0, 0, canvasWidth * devicePixelRatio, canvasHeight * devicePixelRatio);
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    if (rightPressed && x < canvasWidth - radius) x += 5;
-    if (leftPressed && x > radius) x -= 5;
-    if (downPressed && y < canvasHeight - radius) y += 5;
-    if (upPressed && y > radius) y -= 5;
+    if (rightPressed && playerX < canvasWidth - radius) playerX += 5;
+    if (leftPressed && playerX > radius) playerX -= 5;
+    if (downPressed && playerY < canvasHeight - radius) playerY += 5;
+    if (upPressed && playerY > radius) playerY -= 5;
     if (spacePressed) {
-        if (rightPressed && x < canvasWidth - 3 * radius) x += 20;
-        if (leftPressed && x > 3 * radius) x -= 20;
-        if (downPressed && y < canvasHeight - 3 * radius) y += 20;
-        if (upPressed && y > 3 * radius) y -= 20;
+        if (rightPressed && playerX < canvasWidth - 3 * radius) playerX += 20;
+        if (leftPressed && playerX > 3 * radius) playerX -= 20;
+        if (downPressed && playerY < canvasHeight - 3 * radius) playerY += 20;
+        if (upPressed && playerY > 3 * radius) playerY -= 20;
     }
 
     updateChasers();
 
+    if (invincible && (Date.now() - invincibilityStartTime) >= invincibilityDuration) {
+        invincible = false;
+    }
+
     for (let i = 0; i < chasers.length; i++) {
-        if (circlesCollide({ x: x, y: y, radius: radius }, { x: chasers[i].x, y: chasers[i].y, radius: radius })) {
-            gameOver = true;
+        if (!invincible && circlesCollide({ x: playerX, y: playerY, radius: radius }, { x: chasers[i].x, y: chasers[i].y, radius: radius })) {
+            lives--;
+            invincible = true;
+            invincibilityStartTime = Date.now();
+            if (lives === 0) {
+                gameOver = true;
+            }
             break;
         }
     }
 
     ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI * 2);
-    ctx.fillStyle = "#0095DD";
+    ctx.arc(playerX, playerY, radius, 0, Math.PI * 2);
+    ctx.fillStyle = invincible ? "rgba(0, 149, 221, 0.5)" : "#0095DD"; // Visual feedback for invincibility
     ctx.fill();
     ctx.closePath();
 
@@ -206,6 +226,7 @@ function draw() {
     ctx.font = "10px serif";
     ctx.fillStyle = "white";
     ctx.fillText(`Score: ${chaserCount}`, 20, 20);
+    ctx.fillText(`Lives: ${lives}`, 20, 40);
 
     requestAnimationFrame(draw);
 }
