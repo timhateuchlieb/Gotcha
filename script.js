@@ -146,6 +146,13 @@ function resetGame() {
     draw();
 }
 
+function resetKeyDownHandler(){
+    if(gameOver) {
+        resetGame();
+        gameOver = false;
+    }
+}
+
 function draw() {
     if (gameOver) {
         ctx.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -156,6 +163,9 @@ function draw() {
         ctx.font = "24px serif";
         ctx.fillStyle = "white";
         ctx.fillText(`score: ${chaserCount}`, canvasWidth / 2, canvasHeight / 2 + 60);
+        ctx.font = "12px serif";
+        ctx.fillText("press any Key to replay", canvasWidth / 2, canvasHeight / 2 + 120)
+        document.addEventListener('keydown', resetKeyDownHandler, false);
         return;
     }
 
@@ -189,7 +199,7 @@ function draw() {
     // Update and draw all chasers
     updateChasers();
 
-    // Collision detection
+    // Collision of Player and Chaser detection
     for (let i = 0; i < chasers.length; i++) {
         if (circlesCollide({ x: x, y: y, radius: radius }, { x: chasers[i].x, y: chasers[i].y, radius: radius })) {
             gameOver = true;
