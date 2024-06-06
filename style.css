@@ -3,7 +3,7 @@ html, body {
     padding: 0 !important;
 }
 
-canvas{
+canvas {
     background-color: black;
     height: max-content;
     width: max-content;

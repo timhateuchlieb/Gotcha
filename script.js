@@ -7,15 +7,18 @@ let devicePixelRatio = window.devicePixelRatio || 1;
 
 // Game variables
 let gameOver = false;
-
 let lives = 3;
 let playerX = canvasWidth / 2;
 let playerY = canvasHeight / 2;
-
-let chaserCount = 0;
+let kills = 0;
 let chasers = [];
 const chaserSpeed = 2;
 const radius = 10;
+
+// Bullet variables
+let bullets = [];
+const bulletSpeed = 5;
+const bulletRadius = 5;
 
 // Invincibility variables
 let invincible = false;
@@ -27,7 +30,8 @@ let rightPressed = false;
 let leftPressed = false;
 let upPressed = false;
 let downPressed = false;
-let spacePressed = false;
+let turbospeedPressed = false;
+let shootPressed = false;
 
 // Initialize canvas
 function resizeCanvas() {
@@ -68,7 +72,11 @@ function keyDownHandler(event) {
             upPressed = true;
             break;
         case ' ':
-            spacePressed = true;
+            turbospeedPressed = true;
+            break;
+        case 'o':
+            shootPressed = true;
+            shootBullet(); // Shoot bullet when Shift key is pressed
             break;
         case 'Enter':
             if (gameOver) resetGame();
@@ -96,7 +104,10 @@ function keyUpHandler(event) {
             upPressed = false;
             break;
         case ' ':
-            spacePressed = false;
+            turbospeedPressed = false;
+            break;
+        case 'o':
+            shootPressed = false;
             break;
     }
     event.preventDefault();
@@ -112,17 +123,14 @@ function debounce(func, wait) {
 
 function createChaser() {
     const minDistanceFromPlayer = 200;
-
     let chaserX, chaserY;
 
     do {
         chaserX = Math.random() * canvasWidth;
         chaserY = Math.random() * canvasHeight;
-
     } while ((Math.abs(playerX - chaserX) < minDistanceFromPlayer && Math.abs(playerY - chaserY) < minDistanceFromPlayer) || chasers.some(chaser => isOverlapping(chaserX, chaserY, chaser)));
 
     chasers.push({ x: chaserX, y: chaserY });
-    chaserCount++;
 }
 
 function isOverlapping(x, y, chaser) {
@@ -145,6 +153,33 @@ function updateChasers() {
     });
 }
 
+function shootBullet() {
+    const dx = rightPressed ? 1 : leftPressed ? -1 : 0;
+    const dy = downPressed ? 1 : upPressed ? -1 : 0;
+
+    // Only shoot if there's a direction
+    if (dx !== 0 || dy !== 0) {
+        const bullet = {
+            x: playerX,
+            y: playerY,
+            dx: dx,
+            dy: dy
+        };
+        bullets.push(bullet);
+    }
+}
+
+function updateBullets() {
+    bullets.forEach((bullet, index) => {
+        bullet.x += bullet.dx * bulletSpeed;
+        bullet.y += bullet.dy * bulletSpeed;
+
+        if (bullet.x < 0 || bullet.x > canvasWidth || bullet.y < 0 || bullet.y > canvasHeight) {
+            bullets.splice(index, 1); // Remove bullets that go off-screen
+        }
+    });
+}
+
 function circlesCollide(circle1, circle2) {
     const dx = circle2.x - circle1.x;
     const dy = circle2.y - circle1.y;
@@ -155,10 +190,11 @@ function circlesCollide(circle1, circle2) {
 function resetGame() {
     gameOver = false;
     lives = 3;
-    chaserCount = 0;
+    kills = 0;
     playerX = canvasWidth / 2;
     playerY = canvasHeight / 2;
     chasers = [];
+    bullets = [];
     invincible = false;
     draw();
 }
@@ -172,7 +208,7 @@ function draw() {
         ctx.fillText("Game Over", canvasWidth / 2, canvasHeight / 2);
         ctx.font = "24px serif";
         ctx.fillStyle = "white";
-        ctx.fillText(`Score: ${chaserCount}`, canvasWidth / 2, canvasHeight / 2 + 60);
+        ctx.fillText(`Kills: ${kills}`, canvasWidth / 2, canvasHeight / 2 + 60);
         ctx.font = "12px serif";
         ctx.fillText("Press Enter to replay", canvasWidth / 2, canvasHeight / 2 + 120);
         return;
@@ -184,7 +220,7 @@ function draw() {
     if (leftPressed && playerX > radius) playerX -= 5;
     if (downPressed && playerY < canvasHeight - radius) playerY += 5;
     if (upPressed && playerY > radius) playerY -= 5;
-    if (spacePressed) {
+    if (turbospeedPressed) {
         if (rightPressed && playerX < canvasWidth - 3 * radius) playerX += 20;
         if (leftPressed && playerX > 3 * radius) playerX -= 20;
         if (downPressed && playerY < canvasHeight - 3 * radius) playerY += 20;
@@ -192,6 +228,7 @@ function draw() {
     }
 
     updateChasers();
+    updateBullets();
 
     if (invincible && (Date.now() - invincibilityStartTime) >= invincibilityDuration) {
         invincible = false;
@@ -209,11 +246,29 @@ function draw() {
         }
     }
 
+    bullets.forEach((bullet, bulletIndex) => {
+        chasers.forEach((chaser, chaserIndex) => {
+            if (circlesCollide({ x: bullet.x, y: bullet.y, radius: bulletRadius }, { x: chaser.x, y: chaser.y, radius: radius })) {
+                bullets.splice(bulletIndex, 1);
+                chasers.splice(chaserIndex, 1);
+                kills++;
+            }
+        });
+    });
+
     ctx.beginPath();
     ctx.arc(playerX, playerY, radius, 0, Math.PI * 2);
     ctx.fillStyle = invincible ? "rgba(0, 149, 221, 0.5)" : "#0095DD"; // Visual feedback for invincibility
     ctx.fill();
     ctx.closePath();
+
+    bullets.forEach(bullet => {
+        ctx.beginPath();
+        ctx.arc(bullet.x, bullet.y, bulletRadius, 0, Math.PI * 2);
+        ctx.fillStyle = "#00dd00";
+        ctx.fill();
+        ctx.closePath();
+    });
 
     chasers.forEach(chaser => {
         ctx.beginPath();
@@ -225,7 +280,7 @@ function draw() {
 
     ctx.font = "10px serif";
     ctx.fillStyle = "white";
-    ctx.fillText(`Score: ${chaserCount}`, 20, 20);
+    ctx.fillText(`Kills: ${kills}`, 20, 20);
     ctx.fillText(`Lives: ${lives}`, 20, 40);
 
     requestAnimationFrame(draw);
