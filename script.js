@@ -19,6 +19,8 @@ const radius = 10;
 let bullets = [];
 const bulletSpeed = 5;
 const bulletRadius = 5;
+let lastShotTime = 0;
+const shootCooldown = 500; // milliseconds
 
 // Invincibility variables
 let invincible = false;
@@ -75,8 +77,10 @@ function keyDownHandler(event) {
             turbospeedPressed = true;
             break;
         case 'o':
-            shootPressed = true;
-            shootBullet(); // Shoot bullet when Shift key is pressed
+            if (!shootPressed && Date.now() - lastShotTime >= shootCooldown) {
+                shootPressed = true;
+                shootBullet(); // Shoot bullet when 'o' key is pressed
+            }
             break;
         case 'Enter':
             if (gameOver) resetGame();
@@ -166,6 +170,7 @@ function shootBullet() {
             dy: dy
         };
         bullets.push(bullet);
+        lastShotTime = Date.now(); // Update last shot time
     }
 }
 
@@ -216,16 +221,15 @@ function draw() {
 
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    if (rightPressed && playerX < canvasWidth - radius) playerX += 5;
-    if (leftPressed && playerX > radius) playerX -= 5;
-    if (downPressed && playerY < canvasHeight - radius) playerY += 5;
-    if (upPressed && playerY > radius) playerY -= 5;
+    let moveSpeed = 5;
     if (turbospeedPressed) {
-        if (rightPressed && playerX < canvasWidth - 3 * radius) playerX += 20;
-        if (leftPressed && playerX > 3 * radius) playerX -= 20;
-        if (downPressed && playerY < canvasHeight - 3 * radius) playerY += 20;
-        if (upPressed && playerY > 3 * radius) playerY -= 20;
+        moveSpeed = 20;
     }
+
+    if (rightPressed && playerX < canvasWidth - radius) playerX += moveSpeed;
+    if (leftPressed && playerX > radius) playerX -= moveSpeed;
+    if (downPressed && playerY < canvasHeight - radius) playerY += moveSpeed;
+    if (upPressed && playerY > radius) playerY -= moveSpeed;
 
     updateChasers();
     updateBullets();
