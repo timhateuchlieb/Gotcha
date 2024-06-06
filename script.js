@@ -60,30 +60,29 @@ document.addEventListener('keyup', keyUpHandler, false);
 
 function keyDownHandler(event) {
     switch (event.key) {
-        case 'd':
+        case 'ArrowUp':
+        case 'ArrowDown':
+        case 'ArrowLeft':
         case 'ArrowRight':
+            if (!shootPressed && Date.now() - lastShotTime >= shootCooldown) {
+                shootPressed = true;
+                shootBullet(event.key); // Pass the arrow key as a parameter
+            }
+            break;
+        case 'd':
             rightPressed = true;
             break;
         case 'a':
-        case 'ArrowLeft':
             leftPressed = true;
             break;
         case 's':
-        case 'ArrowDown':
             downPressed = true;
             break;
         case 'w':
-        case 'ArrowUp':
             upPressed = true;
             break;
         case ' ':
             turbospeedPressed = true;
-            break;
-        case 'o':
-            if (!shootPressed && Date.now() - lastShotTime >= shootCooldown) {
-                shootPressed = true;
-                shootBullet(); // Shoot bullet when 'o' key is pressed
-            }
             break;
         case 'Enter':
             if (gameOver) resetGame();
@@ -95,34 +94,63 @@ function keyDownHandler(event) {
 function keyUpHandler(event) {
     switch (event.key) {
         case 'd':
-        case 'ArrowRight':
             rightPressed = false;
             break;
         case 'a':
-        case 'ArrowLeft':
             leftPressed = false;
             break;
         case 's':
-        case 'ArrowDown':
             downPressed = false;
             break;
         case 'w':
-        case 'ArrowUp':
             upPressed = false;
             break;
         case ' ':
             turbospeedPressed = false;
             break;
-        case 'o':
+        case 'ArrowUp':
+        case 'ArrowDown':
+        case 'ArrowLeft':
+        case 'ArrowRight':
             shootPressed = false;
             break;
     }
     event.preventDefault();
 }
 
+function shootBullet(eventKey) {
+    let dx = 0;
+    let dy = 0;
+
+    // Determine the direction based on the key
+    switch (eventKey) {
+        case 'ArrowUp':
+            dy = -1;
+            break;
+        case 'ArrowDown':
+            dy = 1;
+            break;
+        case 'ArrowLeft':
+            dx = -1;
+            break;
+        case 'ArrowRight':
+            dx = 1;
+            break;
+    }
+
+    const bullet = {
+        x: playerX,
+        y: playerY,
+        dx: dx,
+        dy: dy
+    };
+    bullets.push(bullet);
+    lastShotTime = Date.now(); // Update last shot time
+}
+
 function debounce(func, wait) {
     let timeout;
-    return function(...args) {
+    return function (...args) {
         clearTimeout(timeout);
         timeout = setTimeout(() => func.apply(this, args), wait);
     };
@@ -164,28 +192,11 @@ function updateChasers() {
             const otherChaser = chasers[j];
             if (isOverlapping(chaser.x, chaser.y, otherChaser)) {
                 chasers.splice(j, 1);
-                chaser.radius = chaser.radius * 1.5;
-                chaser.lives = chaser.lives + 1;
+                chaser.radius += otherChaser.radius; // Sum the radii
+                chaser.lives += otherChaser.lives; // Sum the lives
                 break;
             }
         }
-    }
-}
-
-function shootBullet() {
-    const dx = rightPressed ? 1 : leftPressed ? -1 : 0;
-    const dy = downPressed ? 1 : upPressed ? -1 : 0;
-
-    // Only shoot if there's a direction
-    if (dx !== 0 || dy !== 0) {
-        const bullet = {
-            x: playerX,
-            y: playerY,
-            dx: dx,
-            dy: dy
-        };
-        bullets.push(bullet);
-        lastShotTime = Date.now(); // Update last shot time
     }
 }
 
@@ -275,8 +286,8 @@ function draw() {
                 if (chaser.lives <= 0) {
                     chasers.splice(chaserIndex, 1);
                     kills++;
-                }else{
-                    chaser.radius = chaser.radius / 1.5;
+                } else {
+                    chaser.radius = chaser.radius - initialRadius;
                 }
 
                 bullets.splice(bulletIndex, 1); // Remove the bullet after collision
