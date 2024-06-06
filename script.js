@@ -11,9 +11,12 @@ let lives = 3;
 let playerX = canvasWidth / 2;
 let playerY = canvasHeight / 2;
 let kills = 0;
+
+// Chaser variables
 let chasers = [];
 const chaserSpeed = 2;
-const radius = 10;
+const initialRadius = 10;
+const initialChaserLives = 1;
 
 // Bullet variables
 let bullets = [];
@@ -134,18 +137,19 @@ function createChaser() {
         chaserY = Math.random() * canvasHeight;
     } while ((Math.abs(playerX - chaserX) < minDistanceFromPlayer && Math.abs(playerY - chaserY) < minDistanceFromPlayer) || chasers.some(chaser => isOverlapping(chaserX, chaserY, chaser)));
 
-    chasers.push({ x: chaserX, y: chaserY });
+    chasers.push({ x: chaserX, y: chaserY, radius: initialRadius, lives: initialChaserLives });
 }
 
 function isOverlapping(x, y, chaser) {
     const dx = x - chaser.x;
     const dy = y - chaser.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
-    return distance < (radius * 2);
+    return distance < (chaser.radius * 2);
 }
 
 function updateChasers() {
-    chasers.forEach(chaser => {
+    for (let i = 0; i < chasers.length; i++) {
+        const chaser = chasers[i];
         const dx = playerX - chaser.x;
         const dy = playerY - chaser.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -154,7 +158,18 @@ function updateChasers() {
             chaser.x += (dx / distance) * chaserSpeed;
             chaser.y += (dy / distance) * chaserSpeed;
         }
-    });
+
+        // Check for collisions with other chasers
+        for (let j = i + 1; j < chasers.length; j++) {
+            const otherChaser = chasers[j];
+            if (isOverlapping(chaser.x, chaser.y, otherChaser)) {
+                chasers.splice(j, 1);
+                chaser.radius = chaser.radius * 1.5;
+                chaser.lives = chaser.lives + 1;
+                break;
+            }
+        }
+    }
 }
 
 function shootBullet() {
@@ -226,10 +241,10 @@ function draw() {
         moveSpeed = 20;
     }
 
-    if (rightPressed && playerX < canvasWidth - radius) playerX += moveSpeed;
-    if (leftPressed && playerX > radius) playerX -= moveSpeed;
-    if (downPressed && playerY < canvasHeight - radius) playerY += moveSpeed;
-    if (upPressed && playerY > radius) playerY -= moveSpeed;
+    if (rightPressed && playerX < canvasWidth - initialRadius) playerX += moveSpeed;
+    if (leftPressed && playerX > initialRadius) playerX -= moveSpeed;
+    if (downPressed && playerY < canvasHeight - initialRadius) playerY += moveSpeed;
+    if (upPressed && playerY > initialRadius) playerY -= moveSpeed;
 
     updateChasers();
     updateBullets();
@@ -239,7 +254,7 @@ function draw() {
     }
 
     for (let i = 0; i < chasers.length; i++) {
-        if (!invincible && circlesCollide({ x: playerX, y: playerY, radius: radius }, { x: chasers[i].x, y: chasers[i].y, radius: radius })) {
+        if (!invincible && circlesCollide({ x: playerX, y: playerY, radius: initialRadius }, chasers[i])) {
             lives--;
             invincible = true;
             invincibilityStartTime = Date.now();
@@ -252,16 +267,25 @@ function draw() {
 
     bullets.forEach((bullet, bulletIndex) => {
         chasers.forEach((chaser, chaserIndex) => {
-            if (circlesCollide({ x: bullet.x, y: bullet.y, radius: bulletRadius }, { x: chaser.x, y: chaser.y, radius: radius })) {
-                bullets.splice(bulletIndex, 1);
-                chasers.splice(chaserIndex, 1);
-                kills++;
+            if (circlesCollide({ x: bullet.x, y: bullet.y, radius: bulletRadius }, chaser)) {
+                bullet.dx = 0;
+                bullet.dy = 0;
+                chaser.lives--;
+
+                if (chaser.lives <= 0) {
+                    chasers.splice(chaserIndex, 1);
+                    kills++;
+                }else{
+                    chaser.radius = chaser.radius / 1.5;
+                }
+
+                bullets.splice(bulletIndex, 1); // Remove the bullet after collision
             }
         });
     });
 
     ctx.beginPath();
-    ctx.arc(playerX, playerY, radius, 0, Math.PI * 2);
+    ctx.arc(playerX, playerY, initialRadius, 0, Math.PI * 2);
     ctx.fillStyle = invincible ? "rgba(0, 149, 221, 0.5)" : "#0095DD"; // Visual feedback for invincibility
     ctx.fill();
     ctx.closePath();
@@ -276,7 +300,7 @@ function draw() {
 
     chasers.forEach(chaser => {
         ctx.beginPath();
-        ctx.arc(chaser.x, chaser.y, radius, 0, Math.PI * 2);
+        ctx.arc(chaser.x, chaser.y, chaser.radius, 0, Math.PI * 2);
         ctx.fillStyle = "#dd0000";
         ctx.fill();
         ctx.closePath();
