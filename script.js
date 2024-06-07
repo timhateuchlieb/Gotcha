@@ -38,6 +38,11 @@ let downPressed = false;
 let turbospeedPressed = false;
 let shootPressed = false;
 
+// Check if the device is mobile
+function isMobileDevice() {
+    return /Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent);
+}
+
 // Initialize canvas
 function resizeCanvas() {
     devicePixelRatio = window.devicePixelRatio || 1;
@@ -57,6 +62,21 @@ resizeCanvas();
 
 document.addEventListener('keydown', keyDownHandler, false);
 document.addEventListener('keyup', keyUpHandler, false);
+
+// Show touch controls if on mobile
+if (isMobileDevice()) {
+    document.getElementById('controls').style.display = 'flex';
+
+    document.getElementById('left').addEventListener('touchstart', () => { leftPressed = true; });
+    document.getElementById('left').addEventListener('touchend', () => { leftPressed = false; });
+    document.getElementById('up').addEventListener('touchstart', () => { upPressed = true; });
+    document.getElementById('up').addEventListener('touchend', () => { upPressed = false; });
+    document.getElementById('down').addEventListener('touchstart', () => { downPressed = true; });
+    document.getElementById('down').addEventListener('touchend', () => { downPressed = false; });
+    document.getElementById('right').addEventListener('touchstart', () => { rightPressed = true; });
+    document.getElementById('right').addEventListener('touchend', () => { rightPressed = false; });
+    document.getElementById('shoot').addEventListener('touchstart', () => { if (!shootPressed && Date.now() - lastShotTime >= shootCooldown) { shootPressed = true; shootBullet(); } });
+}
 
 function keyDownHandler(event) {
     switch (event.key) {
