@@ -1,6 +1,13 @@
-#Gotcha Game
+# Gotcha Game
+
+Gotcha is a simple game in which you, as the player, have to flee from the Chasers.
+
+You can find the game [here](https://timhateuchlieb.github.io/Gotcha/).
+
 ---
 
-Gotcha is a Game in wich you as a player have to flee from the Chasers.
+## Game Mechanics:
 
-You can find the Game at here -> https://timhateuchlieb.github.io/Gotcha/
+- **Movement**: Control your player with the "W", "A", "S", "D" keys.
+- **Speed Boost**: Press the "Space" key to get a boost in speed.
+- **Shooting**: Shoot bullets to kill Chasers by pressing the Arrow key in the direction you want to shoot.
