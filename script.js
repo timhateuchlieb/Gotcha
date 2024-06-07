@@ -38,9 +38,19 @@ let downPressed = false;
 let turbospeedPressed = false;
 let shootPressed = false;
 
+//Mobile Movement flags
+let joystickCenterX = 0;
+let joystickCenterY = 0;
+const joystickRadius = 50;
+
 // Check if the device is mobile
 function isMobileDevice() {
     return /Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent);
+}
+
+// Hide Mobile controls on Pc
+if (!isMobileDevice()) {
+    document.getElementById('controls').style.display = 'none';
 }
 
 // Initialize canvas
@@ -63,21 +73,78 @@ resizeCanvas();
 document.addEventListener('keydown', keyDownHandler, false);
 document.addEventListener('keyup', keyUpHandler, false);
 
-// Show touch controls if on mobile
+//Mobile Movement Handlers
 if (isMobileDevice()) {
     document.getElementById('controls').style.display = 'flex';
 
-    document.getElementById('left').addEventListener('touchstart', () => { leftPressed = true; });
-    document.getElementById('left').addEventListener('touchend', () => { leftPressed = false; });
-    document.getElementById('up').addEventListener('touchstart', () => { upPressed = true; });
-    document.getElementById('up').addEventListener('touchend', () => { upPressed = false; });
-    document.getElementById('down').addEventListener('touchstart', () => { downPressed = true; });
-    document.getElementById('down').addEventListener('touchend', () => { downPressed = false; });
-    document.getElementById('right').addEventListener('touchstart', () => { rightPressed = true; });
-    document.getElementById('right').addEventListener('touchend', () => { rightPressed = false; });
-    document.getElementById('shoot').addEventListener('touchstart', () => { if (!shootPressed && Date.now() - lastShotTime >= shootCooldown) { shootPressed = true; shootBullet(); } });
+    const joystick = document.getElementById('joystick');
+    const joystickKnob = document.createElement('div');
+    joystickKnob.style.width = '20px';
+    joystickKnob.style.height = '20px';
+    joystickKnob.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
+    joystickKnob.style.borderRadius = '50%';
+    joystickKnob.style.position = 'absolute';
+    joystickKnob.style.left = '50%';
+    joystickKnob.style.top = '50%';
+    joystickKnob.style.transform = 'translate(-50%, -50%)';
+    joystick.appendChild(joystickKnob);
+
+    joystick.addEventListener('touchstart', handleJoystickStart);
+    joystick.addEventListener('touchmove', handleJoystickMove);
+    joystick.addEventListener('touchend', handleJoystickEnd);
 }
 
+function handleJoystickStart(event) {
+    event.preventDefault();
+    const touch = event.touches[0];
+    joystickCenterX = touch.clientX;
+    joystickCenterY = touch.clientY;
+}
+
+function handleJoystickMove(event) {
+    event.preventDefault();
+    const touch = event.touches[0];
+    const deltaX = touch.clientX - joystickCenterX;
+    const deltaY = touch.clientY - joystickCenterY;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    if (distance > joystickRadius) {
+        const angle = Math.atan2(deltaY, deltaX);
+        const newX = joystickCenterX + Math.cos(angle) * joystickRadius;
+        const newY = joystickCenterY + Math.sin(angle) * joystickRadius;
+        joystickKnob.style.left = `${newX}px`;
+        joystickKnob.style.top = `${newY}px`;
+    } else {
+        joystickKnob.style.left = `${touch.clientX}px`;
+        joystickKnob.style.top = `${touch.clientY}px`;
+    }
+
+    // Calculate direction based on joystick position
+    const directionX = (touch.clientX - joystickCenterX) / joystickRadius;
+    const directionY = (touch.clientY - joystickCenterY) / joystickRadius;
+
+    // Update player movement based on joystick direction
+    updatePlayerMovement(directionX, directionY);
+}
+
+function handleJoystickEnd(event) {
+    event.preventDefault();
+    // Reset joystick position
+    joystickKnob.style.left = '50%';
+    joystickKnob.style.top = '50%';
+
+    // Stop player movement
+    updatePlayerMovement(0, 0);
+}
+
+function updatePlayerMovement(directionX, directionY) {
+    // Adjust player movement based on joystick direction
+    rightPressed = directionX > 0;
+    leftPressed = directionX < 0;
+    downPressed = directionY > 0;
+    upPressed = directionY < 0;
+}
+
+//PC Movement Handlers
 function keyDownHandler(event) {
     switch (event.key) {
         case 'ArrowUp':
