@@ -1,13 +1,37 @@
-# Gotcha Game
+# 🎮 Gotcha - A Circle Chase Game 
 
-Gotcha is a simple game in which you, as the player, have to flee from the Chasers.
+## 📖 Description
 
-You can find the game [here](https://timhateuchlieb.github.io/Gotcha/).
+Gotcha is a simple but fun game where you control a small circle 🔵 that is constantly being chased by enemy circles 🔴. You can move, shoot, and speed boost to evade and destroy enemies. 💥
 
----
+## 🚀 Features
 
-## Game Mechanics:
+- 🎮 **Player Movement**: Move using the `WASD` keys. 🏃‍♂️
+- 🎯 **Shooting**: Fire projectiles using the arrow keys. 🔫
+- ⚡ **Speed Boost**: Press `Space` to increase speed. 💨
+- 🤖 **Enemy AI**: Enemies chase the player dynamically. 👾
 
-- **Movement**: Control your player with the "W", "A", "S", "D" keys.
-- **Speed Boost**: Press the "Space" key to get a boost in speed.
-- **Shooting**: Shoot bullets to kill Chasers by pressing the Arrow key in the direction you want to shoot.
+## 🎮 Controls
+
+- ⬆️ `W` - Move Up 🔼
+- ⬅️ `A` - Move Left ◀️
+- ⬇️ `S` - Move Down 🔽
+- ➡️ `D` - Move Right ▶️
+- 🎯 `Arrow Keys` - Shoot in the respective direction 🔫
+- 🚀 `Space` - Speed boost ⚡
+
+## 🕹️ How to Play
+
+1. 🎮 Start the game and control your circle using `WASD`. 🟢
+2. ⚠️ Avoid getting caught by enemy circles. 🔴
+3. 🎯 Use the arrow keys to shoot at enemies. 💥
+4. ⚡ Press `Space` to boost away when in danger. 💨
+5. 🏆 Survive as long as possible! ⏳
+
+## 💡 Why I Made This Game
+
+I created this game as my first JavaScript project 💻 to learn more about game development. My main focus was to implement how collisions between circles work and how to implement enemy movement.
+
+## 🌍 Play the Game
+
+You can play the game in web at the following URL: 👉 [Play Gotcha](http://timschubert.me/Gotcha/) 
