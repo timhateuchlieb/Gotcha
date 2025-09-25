@@ -34,4 +34,4 @@ I created this game as my first JavaScript project 💻 to learn more about game
 
 ## 🌍 Play the Game
 
-You can play the game in web at the following URL: 👉 [Play Gotcha](http://timschubert.me/Gotcha/) 
+You can play the game in web at the following URL: 👉 [Play Gotcha](https://timhateuchlieb.github.io/Gotcha/) 
